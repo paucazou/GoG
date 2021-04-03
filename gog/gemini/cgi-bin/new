@@ -1,0 +1,59 @@
+#!/usr/bin/python3
+# -*-coding:Utf-8 -*
+#Deus, in adjutorium meum intende
+
+"""Simple CGI page to create:
+    - a new article
+    - a new page (not yet)
+    - a new mail (not yet)
+    """
+import datetime
+import os
+import os.path as op
+import sqlite3
+import sys
+import urllib.parse as up
+
+import global_var
+import util
+
+
+query = os.environ["QUERY_STRING"]
+
+if not query:
+    print("50 text/plain")
+    sys.exit()
+
+if query:
+    print("20 text/gemini")
+    util.printD(up.parse_qs(query))
+    elts = {k:v[0] for k, v in up.parse_qs(query).items() }
+    if util.check_equal(tuple(elts.keys()), ["type","title","author","datetime","content","tag"]):
+        util.printD('ok')
+        if elts["type"] == "article":
+            # enter new article
+            ## check date format
+            util.printD('type article')
+            try:
+                article_time = datetime.datetime.strptime(elts["datetime"],"%Y-%m-%d-%H-%M").timestamp()
+            except ValueError:
+                print(f"Invalid datetime: {elts['datetime']}")
+                sys.exit()
+            #### temporary: later just redirect to the article page
+            print(f"# {elts['title']}")
+            print(f"## {elts['datetime']}")
+            print(f"\n{elts['content']}")
+            print(f"## {elts['author']}")
+            print(f"{elts['tag']}")
+            ## save in database
+            print(op.abspath(op.curdir))
+            conn = sqlite3.connect(global_var.DB_PATH)
+            print(global_var.DB_PATH)
+            cur = conn.cursor()
+            cur.execute("INSERT INTO articles (datetime, author, title, content, tag) VALUES (?, ?, ?, ?, ?)",
+                    (article_time, elts['author'], elts['title'], elts['content'],elts['tag']))
+            conn.commit()
+            conn.close()
+
+
+
