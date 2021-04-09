@@ -1,0 +1,35 @@
+#!/usr/bin/python3
+# -*-coding:Utf-8 -*
+#Deus, in adjutorium meum intende
+
+"""Summary of the blog"""
+import datetime
+import global_var as gv
+import sqlite3
+import sys
+import urllib.parse as up
+
+print("20 text/gemini")
+
+def generate_articles_list(number) -> str:
+    """Generates the list of articles
+    with number as maximum"""
+    conn = sqlite3.connect(gv.DB_PATH)
+    cur = conn.cursor()
+    cur.execute("""SELECT title, datetime FROM articles 
+            WHERE datetime < date('now')
+            ORDER BY datetime DESC
+            LIMIT (?)""",(number,))
+    t = ""
+    for elt in cur:
+        t += f"=> article?datetime={elt[1]}&title={elt[0]} {elt[0]}\n"
+    return t
+
+    
+text = f"""
+20 text/gemini
+# Articles
+{generate_articles_list(20)}
+"""
+print(text)
+# TODO add next / previous links, change number of articles printed

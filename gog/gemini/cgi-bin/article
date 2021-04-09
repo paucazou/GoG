@@ -1,0 +1,55 @@
+#!/usr/bin/python3
+# -*-coding:Utf-8 -*
+#Deus, in adjutorium meum intende
+
+"""Display one article"""
+
+import global_var as gv
+import os
+import sqlite3
+import sys
+import urllib.parse as up
+import util
+
+# TODO chaque tag est un lien vers sa page, datetime est un lien vers les autres articles de cette date
+# TODO ajouter un formatage un peu plus agréable de la date
+
+def load_article(name, datetime):
+    conn = sqlite3.connect(gv.DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cur = conn.cursor()
+    cur.execute("""SELECT * FROM articles
+                WHERE datetime = ?
+                AND title == ?""",(datetime, name))
+    result = cur.fetchone()
+    if result is None:
+        raise ValueError
+    return result
+
+query = os.environ["QUERY_STRING"]
+if not query:
+    # TODO mettre le dernier article
+    pass
+else:
+    request = {k:v[0] for k, v in up.parse_qs(query).items() }
+
+try:
+    res = load_article(request['title'],request['datetime'])
+    print("20 text/gemini")
+    text = f"""
+# {res["title"]}
+## {res['datetime']}
+{res['content']}
+{res['tag']}
+
+* next
+* previous
+    """
+    print(text)
+except ValueError:
+    print("""30 text/gemini""")
+    print("# Article not found")
+    print("There is no such article")
+    print("=> articles.py List of articles")
+    sys.exit()
+
