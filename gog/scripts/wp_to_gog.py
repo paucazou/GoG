@@ -2,6 +2,8 @@
 # -*-coding:Utf-8 -*
 #Deus, in adjutorium meum intende
 
+import datetime
+import wp_htm_parser as htm
 import sqlite3
 import wpparser
 
@@ -28,16 +30,19 @@ def to_epoch(data : list) -> list:
     and modifies the date to transform it 
     into a number of seconds from epoch"""
     for elt in data:
-        elt.datetime = datetime.do_something()
+        elt.datetime = datetime.datetime.strptime(d,"%a, %d %b %Y %H:%M:%S %z").timestamp()
     return data
 
-def format_content(data : list) -> list:
+def format_content(data : list,formatter=htm.parser()) -> list:
     """Changes the Html content to a 
     gemini friendly content"""
+    for elt in data:
+        elt.content = formatter(elt.content)
     return data
 
 def format_tags(data: list) -> list:
     """Format categories into tags readable by GoG"""
+    data.tag = " ".join([elt.replace(' ','_') for elt in data.tag])
     return data
 
 def from_wp_to_db(filename,db="wp.db"):

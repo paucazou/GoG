@@ -47,7 +47,7 @@ try:
     """
     print(text)
 except ValueError:
-    print("""30 text/gemini""")
+    print("""51 text/gemini""")
     print("# Article not found")
     print("There is no such article")
     print("=> articles.py List of articles")
